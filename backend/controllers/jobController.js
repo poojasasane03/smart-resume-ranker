@@ -1,4 +1,6 @@
 const Job = require("../models/Job");
+const Resume = require("../models/Resume");
+const RankingResult = require("../models/RankingResult");
 const asyncHandler = require("../utils/asyncHandler");
 const { validateJobInput } = require("../utils/validators");
 
@@ -58,6 +60,12 @@ const deleteJob = asyncHandler(async (req, res) => {
   if (!job) {
     return res.status(404).json({ message: "Job not found" });
   }
+
+  // Remove everything that belonged to this job
+  // (Phase 6 will also delete the resume files from disk here)
+  await RankingResult.deleteMany({ job: job._id });
+  await Resume.deleteMany({ job: job._id });
+
   res.status(200).json({ message: "Job deleted" });
 });
 
