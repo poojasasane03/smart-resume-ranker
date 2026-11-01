@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Candidate ranking | Smart Resume Ranker</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside id="sidebar" class="sidebar">
+        <a href="../index.html" class="logo">Smart<span>Resume</span>Ranker</a>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="jobs.html">Jobs</a>
+          <a href="upload.html">Upload resumes</a>
+          <a href="ranking.html" class="active">Candidate ranking</a>
+        </nav>
+        <button id="logout-btn" class="logout-btn">Log out</button>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <h1>Candidate ranking</h1>
+            <p>Scores help you shortlist. The decision is always yours.</p>
+          </div>
+          <div class="topbar-actions">
+            <button
+              id="sidebar-toggle"
+              class="sidebar-toggle"
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+
+        <div id="page-message" class="form-message"></div>
+
+        <section class="panel">
+          <div class="filters">
+            <div class="form-group">
+              <label for="job-select">Job</label>
+              <select id="job-select" class="select-input">
+                <option value="">Loading jobs...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="search">Search candidate</label>
+              <input type="search" id="search" placeholder="Name or email" />
+            </div>
+            <div class="form-group">
+              <label for="min-score">Minimum score</label>
+              <input
+                type="number"
+                id="min-score"
+                min="0"
+                max="100"
+                value="0"
+                style="width: 110px"
+              />
+            </div>
+            <div class="form-group">
+              <label for="sort">Sort by</label>
+              <select id="sort">
+                <option value="score-desc">Score (high to low)</option>
+                <option value="score-asc">Score (low to high)</option>
+                <option value="name">Name (A to Z)</option>
+                <option value="experience">Experience (high to low)</option>
+              </select>
+            </div>
+          </div>
+
+          <p class="panel-sub" id="results-count"></p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Compare</th>
+                  <th>#</th>
+                  <th>Candidate</th>
+                  <th>Experience</th>
+                  <th>Score</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="results-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="compare-panel" class="panel" hidden>
+          <h2>Compare candidates</h2>
+          <p class="panel-sub">
+            Tick two candidates in the table to compare them.
+          </p>
+          <div id="compare-grid" class="compare-grid"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/ranking.js"></script>
+  </body>
+</html>

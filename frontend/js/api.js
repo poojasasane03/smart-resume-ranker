@@ -10,8 +10,11 @@ async function apiRequest(path, method = "GET", body = null) {
     options.headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // If we are sending data, tell the server it is JSON
-  if (body) {
+  if (body instanceof FormData) {
+    // Files: let the browser set the Content-Type itself (it adds a boundary)
+    options.body = body;
+  } else if (body) {
+    // Normal data: send as JSON
     options.headers["Content-Type"] = "application/json";
     options.body = JSON.stringify(body);
   }
@@ -28,6 +31,14 @@ async function apiRequest(path, method = "GET", body = null) {
     data = await response.json();
   } catch (error) {
     // response had no JSON body, keep data as {}
+  }
+
+  // Token missing/expired: clear it and send the user to the login page
+  // (but not for /auth/ routes, where 401 just means "wrong password")
+  if (response.status === 401 && !path.startsWith("/auth/")) {
+    localStorage.removeItem("token");
+    window.location.href = "/pages/login.html";
+    throw new Error(data.message || "Please log in again.");
   }
 
   if (!response.ok) {

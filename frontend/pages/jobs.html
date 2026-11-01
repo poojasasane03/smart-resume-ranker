@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jobs | Smart Resume Ranker</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside id="sidebar" class="sidebar">
+        <a href="../index.html" class="logo">Smart<span>Resume</span>Ranker</a>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="jobs.html" class="active">Jobs</a>
+          <a href="upload.html">Upload resumes</a>
+          <a href="ranking.html">Candidate ranking</a>
+        </nav>
+        <button id="logout-btn" class="logout-btn">Log out</button>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <h1>Jobs</h1>
+            <p>Create and manage your job openings.</p>
+          </div>
+          <div class="topbar-actions">
+            <a href="job-form.html" class="btn btn-primary">+ New job</a>
+            <button
+              id="sidebar-toggle"
+              class="sidebar-toggle"
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div id="list-message" class="form-message"></div>
+
+          <input
+            type="search"
+            id="search"
+            class="search-input"
+            placeholder="Search by job title or company"
+          />
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Min. experience</th>
+                  <th>Skills</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jobs-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/jobs.js"></script>
+  </body>
+</html>

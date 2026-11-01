@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job | Smart Resume Ranker</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside id="sidebar" class="sidebar">
+        <a href="../index.html" class="logo">Smart<span>Resume</span>Ranker</a>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="jobs.html" class="active">Jobs</a>
+          <a href="upload.html">Upload resumes</a>
+          <a href="ranking.html">Candidate ranking</a>
+        </nav>
+        <button id="logout-btn" class="logout-btn">Log out</button>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <h1 id="page-title">New job</h1>
+            <p id="page-sub">Describe the role and the skills you need.</p>
+          </div>
+          <div class="topbar-actions">
+            <button
+              id="sidebar-toggle"
+              class="sidebar-toggle"
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+
+        <section class="panel form-panel">
+          <div id="form-message" class="form-message"></div>
+
+          <form id="job-form" novalidate>
+            <div class="form-group">
+              <label for="title">Job title</label>
+              <input type="text" id="title" placeholder="Backend Developer" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="company">Company</label>
+                <input
+                  type="text"
+                  id="company"
+                  placeholder="Acme Technologies"
+                />
+              </div>
+              <div class="form-group">
+                <label for="location">Location (optional)</label>
+                <input type="text" id="location" placeholder="Pune / Remote" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="min-experience">Minimum experience (years)</label>
+              <input
+                type="number"
+                id="min-experience"
+                min="0"
+                max="50"
+                step="0.5"
+                value="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="required-skills">Required skills</label>
+              <input
+                type="text"
+                id="required-skills"
+                placeholder="Node.js, Express, MongoDB"
+              />
+              <div class="form-hint">
+                Separate skills with commas. At least one is needed.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="optional-skills"
+                >Optional skills (nice to have)</label
+              >
+              <input
+                type="text"
+                id="optional-skills"
+                placeholder="Docker, AWS"
+              />
+              <div class="form-hint">Separate skills with commas.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="description">Job description</label>
+              <textarea
+                id="description"
+                placeholder="What will this person do? What matters most for this role?"
+              ></textarea>
+              <div class="form-hint">At least 30 characters.</div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" id="submit-btn" class="btn btn-primary">
+                Save job
+              </button>
+              <a href="jobs.html" class="btn btn-outline">Cancel</a>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/job-form.js"></script>
+  </body>
+</html>

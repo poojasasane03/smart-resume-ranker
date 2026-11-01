@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload resumes | Smart Resume Ranker</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside id="sidebar" class="sidebar">
+        <a href="../index.html" class="logo">Smart<span>Resume</span>Ranker</a>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="jobs.html">Jobs</a>
+          <a href="upload.html" class="active">Upload resumes</a>
+          <a href="ranking.html">Candidate ranking</a>
+        </nav>
+        <button id="logout-btn" class="logout-btn">Log out</button>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <h1>Upload resumes</h1>
+            <p>Choose a job, then add the candidates' resumes.</p>
+          </div>
+          <div class="topbar-actions">
+            <button
+              id="sidebar-toggle"
+              class="sidebar-toggle"
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+
+        <section class="panel form-panel">
+          <div id="form-message" class="form-message"></div>
+
+          <form id="upload-form" novalidate>
+            <div class="form-group">
+              <label for="job-select">Job</label>
+              <select id="job-select" class="select-input">
+                <option value="">Loading jobs...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Resumes</label>
+              <div id="dropzone" class="dropzone" tabindex="0" role="button">
+                <p>
+                  <strong>Click to choose files</strong> or drag and drop them
+                  here
+                </p>
+                <p class="form-hint">
+                  PDF or DOCX, up to 5 MB each, maximum 20 files.
+                </p>
+              </div>
+              <input
+                type="file"
+                id="file-input"
+                accept=".pdf,.docx"
+                multiple
+                hidden
+              />
+              <div id="file-list" class="file-list"></div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" id="submit-btn" class="btn btn-primary">
+                Upload and analyse
+              </button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/upload.js"></script>
+  </body>
+</html>
