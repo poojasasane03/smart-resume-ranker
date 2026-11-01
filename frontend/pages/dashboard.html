@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Smart Resume Ranker</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside id="sidebar" class="sidebar">
+        <a href="../index.html" class="logo">Smart<span>Resume</span>Ranker</a>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html" class="active">Dashboard</a>
+          <a href="jobs.html">Jobs</a>
+          <a href="upload.html">Upload resumes</a>
+          <a href="ranking.html">Candidate ranking</a>
+        </nav>
+        <button id="logout-btn" class="logout-btn">Log out</button>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <h1>Dashboard</h1>
+            <p>An overview of your hiring activity.</p>
+          </div>
+          <button
+            id="sidebar-toggle"
+            class="sidebar-toggle"
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+        </div>
+
+        <section class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total resumes uploaded</div>
+            <div class="stat-value" id="stat-resumes">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total job openings</div>
+            <div class="stat-value" id="stat-jobs">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Candidates analysed</div>
+            <div class="stat-value" id="stat-analyzed">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Average matching score</div>
+            <div class="stat-value" id="stat-average">0%</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Candidate ranking statistics</h2>
+          <p class="panel-sub">
+            How your analysed candidates are spread. The score bands are defined
+            in the ranking phase.
+          </p>
+          <div class="fit-grid">
+            <div class="fit-tile">
+              <div class="fit-count" id="fit-strong">0</div>
+              <div class="fit-label">Strong match</div>
+            </div>
+            <div class="fit-tile">
+              <div class="fit-count" id="fit-possible">0</div>
+              <div class="fit-label">Possible match</div>
+            </div>
+            <div class="fit-tile">
+              <div class="fit-count" id="fit-weak">0</div>
+              <div class="fit-label">Weak match</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Top candidates</h2>
+          <p class="panel-sub">Highest scoring candidates across your jobs.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Candidate</th>
+                  <th>Job</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="top-candidates-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/dashboard.js"></script>
+  </body>
+</html>

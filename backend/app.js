@@ -1,11 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
-
+const path = require("path");
 const app = express();
 
 // Middleware: lets Express read JSON sent in request bodies
 app.use(express.json());
-
+app.use(express.static(path.join(__dirname, "../frontend")));
 // Health check route
 app.get("/api/health", (req, res) => {
   const dbConnected = mongoose.connection.readyState === 1;
