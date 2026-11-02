@@ -403,6 +403,7 @@ ul {
 
 .form-message {
   display: none;
+  white-space: pre-line;
   padding: 10px 12px;
   border-radius: 8px;
   font-size: 0.9rem;

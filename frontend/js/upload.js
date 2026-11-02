@@ -179,11 +179,17 @@ uploadForm.addEventListener("submit", async (event) => {
   submitBtn.textContent = "Uploading...";
 
   try {
-    await apiRequest("/resumes/upload", "POST", formData);
-    showMessage("Upload complete! Opening the ranking...", "success");
-    setTimeout(() => {
-      window.location.href = `ranking.html?jobId=${encodeURIComponent(jobSelect.value)}`;
-    }, 900);
+    const result = await apiRequest("/resumes/upload", "POST", formData);
+    const s = result.summary;
+
+    const lines = [`${s.parsed} of ${s.total} resume(s) read successfully.`];
+    result.problems.forEach((p) => lines.push(`• ${p.fileName}: ${p.reason}`));
+    showMessage(lines.join("\n"), s.parsed > 0 ? "success" : "error");
+
+    if (s.parsed > 0) {
+      selectedFiles = [];
+      renderFiles();
+    }
   } catch (error) {
     showMessage(error.message, "error");
   } finally {

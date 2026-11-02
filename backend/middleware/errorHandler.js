@@ -23,6 +23,20 @@ function errorHandler(err, req, res, next) {
   } else if (err.code === 11000) {
     status = 409;
     message = "An account with this email already exists.";
+  } else if (err.name === "MulterError") {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      status = 413;
+      message = "A file is larger than 5 MB.";
+    } else if (
+      err.code === "LIMIT_UNEXPECTED_FILE" &&
+      err.field === "resumes"
+    ) {
+      status = 400;
+      message = "You can upload at most 20 files at once.";
+    } else {
+      status = 400;
+      message = "Invalid upload request.";
+    }
   }
 
   if (status === 500) {

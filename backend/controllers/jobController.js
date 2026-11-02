@@ -3,6 +3,7 @@ const Resume = require("../models/Resume");
 const RankingResult = require("../models/RankingResult");
 const asyncHandler = require("../utils/asyncHandler");
 const { validateJobInput } = require("../utils/validators");
+const { deleteFile } = require("../services/storageService");
 
 // Every query below includes { user: req.user._id }, so a recruiter
 // can only ever see and change their OWN jobs.
@@ -61,10 +62,11 @@ const deleteJob = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Job not found" });
   }
 
-  // Remove everything that belonged to this job
-  // (Phase 6 will also delete the resume files from disk here)
+  // Remove everything that belonged to this job, including the files on disk
+  const resumes = await Resume.find({ job: job._id }).select("storedName");
   await RankingResult.deleteMany({ job: job._id });
   await Resume.deleteMany({ job: job._id });
+  await Promise.all(resumes.map((resume) => deleteFile(resume.storedName)));
 
   res.status(200).json({ message: "Job deleted" });
 });
