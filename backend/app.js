@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const authRoutes = require("./routes/authRoutes");
 const jobRoutes = require("./routes/jobRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
+const rankingRoutes = require("./routes/rankingRoutes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -30,7 +31,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/resumes", resumeRoutes);
-
+app.use("/api/rankings", rankingRoutes);
 // ----- Errors (must come LAST) -----
 app.use(notFound);
 app.use(errorHandler);

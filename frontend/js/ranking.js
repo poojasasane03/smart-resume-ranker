@@ -13,6 +13,15 @@ const compareGrid = document.getElementById("compare-grid");
 let allResults = [];
 let selectedIds = []; // ids of candidates ticked for comparison (max 2)
 
+let bands = { strong: 75, possible: 50 };
+let summary = { parsedResumes: 0, ranked: 0, unranked: 0 };
+const runBtn = document.getElementById("run-btn");
+
+function bandLabel(score) {
+  if (score >= bands.strong) return "Strong match";
+  if (score >= bands.possible) return "Possible match";
+  return "Weak match";
+}
 function showPageMessage(text) {
   pageMessage.textContent = text;
   pageMessage.className = text ? "form-message error" : "form-message";
@@ -83,10 +92,14 @@ function getVisibleResults() {
 
 function applyFilters() {
   const visible = getVisibleResults();
-  resultsCount.textContent =
+  let countText =
     allResults.length === 0
       ? ""
-      : `Showing ${visible.length} of ${allResults.length} candidates`;
+      : `Showing ${visible.length} of ${allResults.length} candidates.`;
+  if (summary.unranked > 0) {
+    countText += ` ${summary.unranked} resume(s) not ranked yet. Click "Run ranking".`;
+  }
+  resultsCount.textContent = countText.trim();
   renderResults(visible);
   renderCompare();
 }
@@ -127,6 +140,7 @@ function renderResults(results) {
     fill.style.width = `${Math.max(0, Math.min(100, r.score))}%`;
     bar.appendChild(fill);
     scoreCell.appendChild(bar);
+    scoreCell.appendChild(el("div", "cell-sub", bandLabel(r.score)));
 
     // Details button
     const detailsCell = document.createElement("td");
@@ -235,6 +249,7 @@ function renderCompare() {
 async function loadRanking(jobId) {
   allResults = [];
   selectedIds = [];
+  summary = { parsedResumes: 0, ranked: 0, unranked: 0 };
   showPageMessage("");
 
   if (!jobId) {
@@ -247,12 +262,32 @@ async function loadRanking(jobId) {
       `/rankings?jobId=${encodeURIComponent(jobId)}`,
     );
     allResults = data.results || [];
+    if (data.bands) bands = data.bands;
+    if (data.summary) summary = data.summary;
   } catch (error) {
     showPageMessage(`Could not load the ranking: ${error.message}`);
   }
   applyFilters();
 }
 
+async function runRanking() {
+  if (!jobSelect.value) {
+    showPageMessage("Please select a job first.");
+    return;
+  }
+
+  runBtn.disabled = true;
+  runBtn.textContent = "Ranking...";
+  try {
+    await apiRequest("/rankings/run", "POST", { jobId: jobSelect.value });
+    await loadRanking(jobSelect.value);
+  } catch (error) {
+    showPageMessage(error.message);
+  } finally {
+    runBtn.disabled = false;
+    runBtn.textContent = "Run ranking";
+  }
+}
 async function loadJobs() {
   try {
     const data = await apiRequest("/jobs");
@@ -283,6 +318,7 @@ async function loadJobs() {
 }
 
 jobSelect.addEventListener("change", () => loadRanking(jobSelect.value));
+runBtn.addEventListener("click", runRanking);
 searchInput.addEventListener("input", applyFilters);
 minScoreInput.addEventListener("input", applyFilters);
 sortSelect.addEventListener("change", applyFilters);
