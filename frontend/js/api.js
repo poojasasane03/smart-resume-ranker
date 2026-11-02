@@ -47,3 +47,47 @@ async function apiRequest(path, method = "GET", body = null) {
 
   return data;
 }
+// Downloads a file from a protected route. A normal link cannot send our login token.
+async function apiDownload(path, fallbackName) {
+  const token = localStorage.getItem("token");
+
+  let response;
+  try {
+    response = await fetch(API_BASE + path, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch (error) {
+    throw new Error("Cannot reach the server. Is the backend running?");
+  }
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/pages/login.html";
+    throw new Error("Please log in again.");
+  }
+
+  if (!response.ok) {
+    let message = `Download failed (${response.status})`;
+    try {
+      message = (await response.json()).message || message;
+    } catch (error) {
+      // not JSON, keep the default message
+    }
+    throw new Error(message);
+  }
+
+  // The server names the file; use our own name if that header is missing
+  const disposition = response.headers.get("Content-Disposition") || "";
+  const match = disposition.match(/filename="?([^";]+)"?/i);
+  const fileName = match ? match[1] : fallbackName;
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}

@@ -7,6 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const jobRoutes = require("./routes/jobRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
 const rankingRoutes = require("./routes/rankingRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/rankings", rankingRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 // ----- Errors (must come LAST) -----
 app.use(notFound);
 app.use(errorHandler);

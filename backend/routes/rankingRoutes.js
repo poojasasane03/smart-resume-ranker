@@ -1,6 +1,10 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
-const { runRanking, getRankings } = require("../controllers/rankingController");
+const {
+  runRanking,
+  getRankings,
+  exportRanking,
+} = require("../controllers/rankingController");
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -17,6 +21,7 @@ const runLimiter = rateLimit({
 });
 
 router.get("/", getRankings);
+router.get("/export", exportRanking);
 router.post("/run", runLimiter, runRanking);
 
 module.exports = router;

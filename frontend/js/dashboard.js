@@ -19,6 +19,12 @@ function showStats(stats) {
   setText("fit-strong", stats.fit.strong);
   setText("fit-possible", stats.fit.possible);
   setText("fit-weak", stats.fit.weak);
+  if (stats.bands) {
+    setText(
+      "fit-note",
+      `Strong match: ${stats.bands.strong}% and above. Possible: ${stats.bands.possible}% to ${stats.bands.strong - 1}%. Weak: below ${stats.bands.possible}%.`,
+    );
+  }
 
   const body = document.getElementById("top-candidates-body");
   body.innerHTML = "";

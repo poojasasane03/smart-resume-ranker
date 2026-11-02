@@ -319,6 +319,34 @@ async function loadJobs() {
 
 jobSelect.addEventListener("change", () => loadRanking(jobSelect.value));
 runBtn.addEventListener("click", runRanking);
+const csvBtn = document.getElementById("csv-btn");
+const pdfBtn = document.getElementById("pdf-btn");
+
+async function downloadReport(format, button) {
+  if (!jobSelect.value) {
+    showPageMessage("Please select a job first.");
+    return;
+  }
+
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Preparing...";
+  try {
+    await apiDownload(
+      `/rankings/export?jobId=${encodeURIComponent(jobSelect.value)}&format=${format}`,
+      `ranking.${format}`,
+    );
+    showPageMessage("");
+  } catch (error) {
+    showPageMessage(error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
+csvBtn.addEventListener("click", () => downloadReport("csv", csvBtn));
+pdfBtn.addEventListener("click", () => downloadReport("pdf", pdfBtn));
 searchInput.addEventListener("input", applyFilters);
 minScoreInput.addEventListener("input", applyFilters);
 sortSelect.addEventListener("change", applyFilters);

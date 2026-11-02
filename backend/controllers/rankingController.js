@@ -5,6 +5,7 @@ const RankingResult = require("../models/RankingResult");
 const asyncHandler = require("../utils/asyncHandler");
 const { scoreResume, resolveWeights } = require("../services/scoringService");
 const { FIT_BANDS } = require("../config/scoringConfig");
+const { buildCsv, writePdf } = require("../services/reportService");
 
 // Builds the response the ranking page needs
 async function buildRankingResponse(userId, jobId) {
@@ -113,5 +114,46 @@ const getRankings = asyncHandler(async (req, res) => {
   const response = await buildRankingResponse(req.user._id, jobId);
   res.status(200).json(response);
 });
+// "Backend Developer!" -> "backend-developer" (safe to use inside a file name)
+function slugify(text) {
+  const slug = String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  return slug || "job";
+}
 
-module.exports = { runRanking, getRankings };
+// GET /api/rankings/export?jobId=...&format=csv|pdf
+const exportRanking = asyncHandler(async (req, res) => {
+  const { jobId, format = "csv" } = req.query;
+
+  if (!mongoose.isValidObjectId(jobId)) {
+    return res.status(400).json({ message: "A valid jobId is required." });
+  }
+  if (format !== "csv" && format !== "pdf") {
+    return res.status(400).json({ message: "Format must be csv or pdf." });
+  }
+
+  const job = await Job.findOne({ _id: jobId, user: req.user._id });
+  if (!job) {
+    return res.status(404).json({ message: "Job not found" });
+  }
+
+  const { results } = await buildRankingResponse(req.user._id, job._id);
+  if (results.length === 0) {
+    return res.status(400).json({
+      message: "There is nothing to export yet. Run the ranking first.",
+    });
+  }
+
+  const fileName = `ranking-${slugify(job.title)}.${format}`;
+  res.attachment(fileName); // sets Content-Disposition and the content type
+
+  if (format === "csv") {
+    return res.send(buildCsv(results));
+  }
+  writePdf(res, job, results);
+});
+
+module.exports = { runRanking, getRankings, exportRanking };
