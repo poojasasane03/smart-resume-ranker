@@ -12,3 +12,5 @@ if len(NLP_SECRET) < 16:
     raise RuntimeError(
         "NLP_SECRET is missing or too short. Add a random value of at least 16 characters to nlp-service/.env"
     )
+    
+MODEL_NAME = os.getenv("NLP_MODEL", "all-MiniLM-L6-v2")
