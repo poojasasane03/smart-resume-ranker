@@ -10,6 +10,23 @@ const breakdownSchema = new mongoose.Schema(
   },
   { _id: false }, // these are small embedded items, they do not need their own id
 );
+// Language hints from the Python NLP service. They are shown to the recruiter but do not change the score (yet).
+const semanticSchema = new mongoose.Schema(
+  {
+    similarity: { type: Number, default: null },
+    model: { type: String, default: "" },
+    skillHints: [
+      {
+        _id: false,
+        skill: String,
+        line: String,
+        similarity: Number,
+        margin: Number,
+      },
+    ],
+  },
+  { _id: false },
+);
 
 const rankingResultSchema = new mongoose.Schema(
   {
@@ -33,6 +50,8 @@ const rankingResultSchema = new mongoose.Schema(
     matchedSkills: { type: [String], default: [] },
     missingSkills: { type: [String], default: [] },
     breakdown: { type: [breakdownSchema], default: [] },
+
+    semantic: { type: semanticSchema, default: null },
 
     // Which version of the scoring formula produced this result
     algorithmVersion: { type: String, default: "1.0" },

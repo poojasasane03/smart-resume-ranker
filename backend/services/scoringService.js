@@ -226,6 +226,7 @@ function scoreResume(job, resume, weights = DEFAULT_WEIGHTS) {
       ...parts.required.missing,
       ...parts.optional.missing.map((skill) => `${skill} (optional)`),
     ],
+    exactMissing: [...parts.required.missing, ...parts.optional.missing],
     breakdown,
     algorithmVersion: ALGORITHM_VERSION,
   };

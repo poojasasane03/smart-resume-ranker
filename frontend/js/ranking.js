@@ -47,6 +47,49 @@ function makeChips(skills, extraClass) {
 }
 
 function makeBreakdown(breakdown) {
+  // Language hints from the NLP service. They are shown for the recruiter to check, and are not part of the score.
+  function makeHints(semantic) {
+    if (!semantic) return null;
+
+    const box = el("div");
+    box.appendChild(el("h4", "", "Language hints (not part of the score)"));
+
+    if (typeof semantic.similarity === "number") {
+      box.appendChild(
+        el(
+          "div",
+          "cell-sub",
+          `Overall meaning match: ${semantic.similarity.toFixed(2)}`,
+        ),
+      );
+    }
+
+    const hints = [...(semantic.skillHints || [])]
+      .sort((a, b) => b.margin - a.margin)
+      .slice(0, 3);
+    hints.forEach((hint) => {
+      const item = el("div", "hint");
+      item.appendChild(el("strong", "", hint.skill));
+      item.appendChild(el("div", "cell-sub", `"${hint.line}"`));
+      item.appendChild(
+        el(
+          "div",
+          "cell-sub",
+          `similarity ${hint.similarity.toFixed(2)}, margin ${hint.margin.toFixed(2)}`,
+        ),
+      );
+      box.appendChild(item);
+    });
+
+    box.appendChild(
+      el(
+        "p",
+        "cell-sub",
+        "Check the line yourself. The model can confuse similar names, for example Java and JavaScript.",
+      ),
+    );
+    return box;
+  }
   const wrapper = el("div");
   if (!breakdown || breakdown.length === 0) {
     wrapper.appendChild(el("span", "cell-sub", "No breakdown available."));
@@ -183,6 +226,8 @@ function renderResults(results) {
     grid.appendChild(matchedBox);
     grid.appendChild(missingBox);
     grid.appendChild(breakdownBox);
+    const hintsBox = makeHints(r.semantic);
+    if (hintsBox) grid.appendChild(hintsBox);
     detailsTd.appendChild(grid);
     detailsRow.appendChild(detailsTd);
     resultsBody.appendChild(detailsRow);
@@ -279,8 +324,18 @@ async function runRanking() {
   runBtn.disabled = true;
   runBtn.textContent = "Ranking...";
   try {
-    await apiRequest("/rankings/run", "POST", { jobId: jobSelect.value });
+    const data = await apiRequest("/rankings/run", "POST", {
+      jobId: jobSelect.value,
+    });
     await loadRanking(jobSelect.value);
+    if (
+      data.semanticStatus === "unavailable" ||
+      data.semanticStatus === "partial"
+    ) {
+      showPageMessage(
+        "Ranking is ready, but the language service did not answer, so some language hints are missing.",
+      );
+    }
   } catch (error) {
     showPageMessage(error.message);
   } finally {

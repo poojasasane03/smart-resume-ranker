@@ -919,3 +919,6 @@ th {
     grid-template-columns: 1fr;
   }
 }
+.hint {
+  margin-bottom: 10px;
+}

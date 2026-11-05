@@ -5,6 +5,7 @@ const RankingResult = require("../models/RankingResult");
 const asyncHandler = require("../utils/asyncHandler");
 const { scoreResume, resolveWeights } = require("../services/scoringService");
 const { FIT_BANDS } = require("../config/scoringConfig");
+const { nlpClient } = require("../services/nlpClient");
 const { buildCsv, writePdf } = require("../services/reportService");
 
 // Builds the response the ranking page needs
@@ -27,6 +28,7 @@ async function buildRankingResponse(userId, jobId) {
       matchedSkills: row.matchedSkills,
       missingSkills: row.missingSkills,
       breakdown: row.breakdown,
+      semantic: row.semantic || null,
       updatedAt: row.updatedAt,
     }));
 
@@ -39,6 +41,28 @@ async function buildRankingResponse(userId, jobId) {
       unranked: Math.max(0, parsedCount - results.length),
     },
   };
+}
+
+// Asks the Python NLP service for language hints. It never changes the score and never fails the ranking.
+async function getSemanticAnalysis(job, resumes, scored) {
+  const exactMissing = new Map(
+    scored.map((item) => [String(item.resumeId), item.exactMissing]),
+  );
+
+  const items = resumes.map((resume) => ({
+    id: String(resume._id),
+    text: resume.extractedText,
+    // The name and email are removed from the text before the model sees it
+    redact: [resume.candidateName, resume.email]
+      .filter((term) => term && term.trim().length >= 2)
+      .map((term) => term.trim().slice(0, 100)),
+    missingSkills: exactMissing.get(String(resume._id)) || [],
+  }));
+
+  return nlpClient.analyzeResumes({
+    jobText: `${job.title}\n${job.description}`,
+    items,
+  });
 }
 
 // POST /api/rankings/run   body: { jobId, weights? }
@@ -80,6 +104,9 @@ const runRanking = asyncHandler(async (req, res) => {
     ...scoreResume(job, resume, weights),
   }));
 
+  // Optional language hints from the Python service (the score stays exactly as before)
+  const semantic = await getSemanticAnalysis(job, resumes, scored);
+
   // One result per resume per job: update it if it exists, create it if not
   await RankingResult.bulkWrite(
     scored.map((item) => ({
@@ -93,6 +120,9 @@ const runRanking = asyncHandler(async (req, res) => {
             missingSkills: item.missingSkills,
             breakdown: item.breakdown,
             algorithmVersion: item.algorithmVersion,
+            ...(semantic.byId.has(String(item.resumeId))
+              ? { semantic: semantic.byId.get(String(item.resumeId)) }
+              : {}),
           },
         },
         upsert: true,
@@ -101,7 +131,11 @@ const runRanking = asyncHandler(async (req, res) => {
   );
 
   const response = await buildRankingResponse(req.user._id, job._id);
-  res.status(200).json({ ...response, weightsUsed: weights });
+  res.status(200).json({
+    ...response,
+    weightsUsed: weights,
+    semanticStatus: semantic.status,
+  });
 });
 
 // GET /api/rankings?jobId=...
@@ -114,6 +148,7 @@ const getRankings = asyncHandler(async (req, res) => {
   const response = await buildRankingResponse(req.user._id, jobId);
   res.status(200).json(response);
 });
+
 // "Backend Developer!" -> "backend-developer" (safe to use inside a file name)
 function slugify(text) {
   const slug = String(text)
