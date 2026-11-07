@@ -52,7 +52,7 @@ function makeBreakdown(breakdown) {
     if (!semantic) return null;
 
     const box = el("div");
-    box.appendChild(el("h4", "", "Language hints (not part of the score)"));
+    box.appendChild(el("h4", "", "Language hints (for you to check)"));
 
     if (typeof semantic.similarity === "number") {
       box.appendChild(

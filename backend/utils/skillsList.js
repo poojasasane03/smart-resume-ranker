@@ -58,6 +58,22 @@ const SKILLS = [
   ["CI/CD", "ci/cd", "cicd"],
   ["Jenkins", "jenkins"],
 
+  // Computer science basics
+  [
+    "OOP",
+    "oop",
+    "oops",
+    "object oriented programming",
+    "object-oriented programming",
+  ],
+  [
+    "DSA",
+    "dsa",
+    "data structures and algorithms",
+    "data structures & algorithms",
+  ],
+  ["DBMS", "dbms", "database management system", "database management systems"],
+
   // Data and AI
   ["Machine Learning", "machine learning"],
   ["Deep Learning", "deep learning"],

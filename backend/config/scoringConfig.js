@@ -8,6 +8,7 @@ const DEFAULT_WEIGHTS = {
   experience: 20, // years of experience compared with the job's minimum
   keywords: 10, // important words from the job description
   education: 5, // degree level, only if the job description mentions one
+  semantic: 0, // meaning match from the language model. 0 = off until you calibrate it (see SEMANTIC below)
 };
 
 const COMPONENT_LABELS = {
@@ -16,6 +17,7 @@ const COMPONENT_LABELS = {
   experience: "Experience",
   keywords: "Job description keywords",
   education: "Education",
+  semantic: "Meaning match",
 };
 
 // Score bands used for the "Strong / Possible / Weak match" labels
@@ -25,6 +27,16 @@ const KEYWORD_LIMIT = 15; // how many top words of the job description we look f
 const MIN_KEYWORDS = 3; // with fewer words than this, the keyword part is skipped
 const ALGORITHM_VERSION = "1.0"; // change this when the formula changes
 
+// Settings for the language model (the Python NLP service).
+// Fill the two anchors in by calibrating with real resumes: node scripts/semanticReport.js JOB_ID
+const SEMANTIC = {
+  low: null, // similarity of a candidate you judge clearly irrelevant: worth 0 points
+  high: null, // similarity of a candidate you judge clearly strong: worth 100 points
+  hintMinSimilarity: 0, // hints below this similarity are hidden
+  hintMinMargin: 0, // hints below this margin are hidden
+  hintsPerCandidate: 3, // at most this many hints are shown for one candidate
+};
+
 module.exports = {
   DEFAULT_WEIGHTS,
   COMPONENT_LABELS,
@@ -32,4 +44,5 @@ module.exports = {
   KEYWORD_LIMIT,
   MIN_KEYWORDS,
   ALGORITHM_VERSION,
+  SEMANTIC,
 };

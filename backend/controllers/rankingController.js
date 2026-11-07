@@ -6,6 +6,10 @@ const asyncHandler = require("../utils/asyncHandler");
 const { scoreResume, resolveWeights } = require("../services/scoringService");
 const { FIT_BANDS } = require("../config/scoringConfig");
 const { nlpClient } = require("../services/nlpClient");
+const {
+  filterSemantic,
+  canScoreWithSemantic,
+} = require("../services/semanticService");
 const { buildCsv, writePdf } = require("../services/reportService");
 
 // Builds the response the ranking page needs
@@ -28,7 +32,7 @@ async function buildRankingResponse(userId, jobId) {
       matchedSkills: row.matchedSkills,
       missingSkills: row.missingSkills,
       breakdown: row.breakdown,
-      semantic: row.semantic || null,
+      semantic: filterSemantic(row.semantic),
       updatedAt: row.updatedAt,
     }));
 
@@ -98,14 +102,32 @@ const runRanking = asyncHandler(async (req, res) => {
     });
   }
 
-  // Score everything first. If a weight problem throws, nothing is saved.
-  const scored = resumes.map((resume) => ({
+  // Pass 1: exact matching only. Its list of missing skills is what we ask the language service about.
+  const exactOnly = resumes.map((resume) => ({
     resumeId: resume._id,
     ...scoreResume(job, resume, weights),
   }));
 
-  // Optional language hints from the Python service (the score stays exactly as before)
-  const semantic = await getSemanticAnalysis(job, resumes, scored);
+  // Language data from the Python service (it never makes the ranking fail)
+  const semantic = await getSemanticAnalysis(job, resumes, exactOnly);
+
+  // Pass 2: the "meaning match" joins the score ONLY when every resume of this run has it,
+  // so all candidates are judged in exactly the same way.
+  const useSemantic = canScoreWithSemantic({
+    weights,
+    status: semantic.status,
+    resumeIds: resumes.map((resume) => String(resume._id)),
+    byId: semantic.byId,
+  });
+
+  const scored = useSemantic
+    ? resumes.map((resume) => ({
+        resumeId: resume._id,
+        ...scoreResume(job, resume, weights, {
+          semanticSimilarity: semantic.byId.get(String(resume._id)).similarity,
+        }),
+      }))
+    : exactOnly;
 
   // One result per resume per job: update it if it exists, create it if not
   await RankingResult.bulkWrite(
@@ -135,6 +157,7 @@ const runRanking = asyncHandler(async (req, res) => {
     ...response,
     weightsUsed: weights,
     semanticStatus: semantic.status,
+    semanticInScore: useSemantic,
   });
 });
 

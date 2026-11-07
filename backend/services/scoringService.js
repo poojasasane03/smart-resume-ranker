@@ -4,6 +4,7 @@ const {
   KEYWORD_LIMIT,
   MIN_KEYWORDS,
   ALGORITHM_VERSION,
+  SEMANTIC,
 } = require("../config/scoringConfig");
 const { findSkills } = require("./skillMatcher");
 
@@ -178,11 +179,27 @@ function scoreKeywords(job, text) {
   const found = keywords.filter((word) => resumeWords.has(word));
   return { applicable: true, score: (found.length / keywords.length) * 100 };
 }
+// ---------- Meaning match (from the Python language service) ----------
+// Turns the raw similarity into 0-100 using two anchors that were chosen from real data (see scoringConfig.js).
+function scoreSemantic(similarity, anchors) {
+  const { low, high } = anchors;
+  if (
+    typeof similarity !== "number" ||
+    typeof low !== "number" ||
+    typeof high !== "number" ||
+    high <= low
+  ) {
+    return { applicable: false };
+  }
+
+  const position = (similarity - low) / (high - low);
+  return { applicable: true, score: Math.min(1, Math.max(0, position)) * 100 };
+}
 
 // ---------- Putting it all together ----------
 // job: { title, description, minExperience, requiredSkills, optionalSkills }
 // resume: { extractedText, experienceYears, education }
-function scoreResume(job, resume, weights = DEFAULT_WEIGHTS) {
+function scoreResume(job, resume, weights = DEFAULT_WEIGHTS, extras = {}) {
   const text = resume.extractedText || "";
 
   const parts = {
@@ -191,6 +208,10 @@ function scoreResume(job, resume, weights = DEFAULT_WEIGHTS) {
     experience: scoreExperience(job, resume),
     keywords: scoreKeywords(job, text),
     education: scoreEducation(job, resume),
+    semantic: scoreSemantic(
+      extras.semanticSimilarity,
+      extras.anchors || SEMANTIC,
+    ),
   };
 
   // Only parts that apply to this job (and have a weight) take part
