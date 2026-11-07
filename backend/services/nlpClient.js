@@ -87,7 +87,34 @@ function createNlpClient(config) {
     return { status, byId };
   }
 
-  return { analyzeResumes };
+  // Is the Python service reachable, and has it finished loading the model?
+  // returns "off" | "up" | "loading" | "down". It never throws.
+  async function checkHealth() {
+    if (!config.enabled) return "off";
+
+    const controller = new AbortController();
+    const timer = setTimeout(
+      () => controller.abort(),
+      config.healthTimeoutMs || 2000,
+    );
+
+    try {
+      const response = await fetch(`${config.url}/health`, {
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return "down";
+
+      const data = await response.json();
+      return data.model_loaded ? "up" : "loading";
+    } catch (error) {
+      return "down";
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  return { analyzeResumes, checkHealth };
 }
 
 module.exports = { createNlpClient, nlpClient: createNlpClient(NLP) };

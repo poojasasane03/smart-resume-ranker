@@ -9,6 +9,7 @@ const resumeRoutes = require("./routes/resumeRoutes");
 const rankingRoutes = require("./routes/rankingRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
+const { nlpClient } = require("./services/nlpClient");
 
 const app = express();
 
@@ -20,12 +21,15 @@ app.use(express.json({ limit: "1mb" })); // read JSON bodies, refuse huge ones
 app.use(express.static(path.join(__dirname, "../frontend"))); // serve the frontend
 
 // ----- Routes -----
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
   const dbConnected = mongoose.connection.readyState === 1;
+  const nlp = await nlpClient.checkHealth();
+
   res.status(200).json({
     status: "ok",
     message: "Smart Resume Ranker API is running",
     database: dbConnected ? "connected" : "disconnected",
+    nlp, // "off" | "up" | "loading" | "down"
   });
 });
 
