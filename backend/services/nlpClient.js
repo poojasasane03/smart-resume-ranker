@@ -1,7 +1,8 @@
 const { NLP } = require("../config/nlpConfig");
 
-// The client never throws: if the Python service is off, slow or broken, ranking still works
-// with exact matching only. It also never logs resume text.
+// The client never throws: if the Python service is off, slow or broken,
+// ranking still works with exact matching only.
+// It also never logs resume text.
 function createNlpClient(config) {
   async function postJson(path, body) {
     const controller = new AbortController();
@@ -23,14 +24,17 @@ function createNlpClient(config) {
           `the NLP service answered with status ${response.status}`,
         );
       }
+
       return await response.json();
     } catch (error) {
       if (error.name === "AbortError") {
         throw new Error("the NLP service took too long to answer");
       }
+
       if (error.message === "fetch failed") {
         throw new Error("could not reach the NLP service (is it running?)");
       }
+
       throw error;
     } finally {
       clearTimeout(timer);
@@ -38,9 +42,10 @@ function createNlpClient(config) {
   }
 
   // items: [{ id, text, redact: [name, email], missingSkills: [...] }]
-  // returns: { status: "off" | "ok" | "partial" | "unavailable", byId: Map(id -> semantic data) }
+  // returns: { status, byId: Map(id -> semantic data) }
   async function analyzeResumes({ jobText, items }) {
     const byId = new Map();
+
     if (!config.enabled || items.length === 0) {
       return { status: "off", byId };
     }
@@ -73,9 +78,11 @@ function createNlpClient(config) {
             skillHints: result.skill_matches,
           });
         }
+
         okBatches++;
       } catch (error) {
         failedBatches++;
+
         console.warn(
           `Semantic analysis skipped for ${batch.length} resume(s): ${error.message}`,
         );
@@ -84,6 +91,7 @@ function createNlpClient(config) {
 
     const status =
       failedBatches === 0 ? "ok" : okBatches === 0 ? "unavailable" : "partial";
+
     return { status, byId };
   }
 
@@ -93,6 +101,7 @@ function createNlpClient(config) {
     if (!config.enabled) return "off";
 
     const controller = new AbortController();
+
     const timer = setTimeout(
       () => controller.abort(),
       config.healthTimeoutMs || 2000,
@@ -100,13 +109,23 @@ function createNlpClient(config) {
 
     try {
       const response = await fetch(`${config.url}/health`, {
+        method: "GET",
         signal: controller.signal,
       });
 
       if (!response.ok) return "down";
 
       const data = await response.json();
-      return data.model_loaded ? "up" : "loading";
+
+      if (data.model_loaded === true) {
+        return "up";
+      }
+
+      if (data.model_loaded === false) {
+        return "loading";
+      }
+
+      return "down";
     } catch (error) {
       return "down";
     } finally {
@@ -117,4 +136,7 @@ function createNlpClient(config) {
   return { analyzeResumes, checkHealth };
 }
 
-module.exports = { createNlpClient, nlpClient: createNlpClient(NLP) };
+module.exports = {
+  createNlpClient,
+  nlpClient: createNlpClient(NLP),
+};

@@ -34,6 +34,7 @@ form.addEventListener("submit", async (event) => {
     email: document.getElementById("email").value.trim(),
     password: document.getElementById("password").value,
     confirmPassword: document.getElementById("confirm-password").value,
+    inviteCode: document.getElementById("invite-code").value.trim(),
   };
 
   const error = validateSignup(data);
@@ -51,6 +52,7 @@ form.addEventListener("submit", async (event) => {
       company: data.company,
       email: data.email,
       password: data.password,
+      inviteCode: data.inviteCode,
     });
 
     if (result.token) localStorage.setItem("token", result.token);

@@ -5,6 +5,7 @@ const {
   validateRegisterInput,
   validateLoginInput,
 } = require("../utils/validators");
+const { checkSignup } = require("../utils/signupPolicy");
 
 // What we are willing to send back about a user (never the password)
 function publicUser(user) {
@@ -19,7 +20,14 @@ function publicUser(user) {
 
 // POST /api/auth/register
 const register = asyncHandler(async (req, res) => {
+  // Who may sign up is decided first (an invite code online, open on your own computer)
+  const policy = checkSignup(process.env, req.body && req.body.inviteCode);
+  if (!policy.allowed) {
+    return res.status(policy.status).json({ message: policy.message });
+  }
+
   const { data, error } = validateRegisterInput(req.body);
+
   if (error) {
     return res.status(400).json({ message: error });
   }
